@@ -7,7 +7,7 @@ const { createClient } = require("@supabase/supabase-js");
 
 // Supabase server client
 const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
+  process.env.SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
@@ -68,6 +68,9 @@ io.on("connection", (socket) => {
   });
 });
 
-server.listen(process.env.PORT, () => {
-  console.log(`🚀 Socket server running on port ${process.env.PORT}`);
+const PORT = process.env.PORT || 3001;
+
+server.listen(PORT, () => {
+  console.log(`🚀 Socket server running on port ${PORT}`);
 });
+
