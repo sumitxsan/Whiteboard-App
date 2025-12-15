@@ -27,21 +27,19 @@ io.on("connection", (socket) => {
     socket.join(boardId);
     console.log("User joined board:", boardId);
 
-    // 1️⃣ Load previous strokes from DB and send to this client
+    // Load previous strokes from DB and send to this client
     const { data, error } = await supabase
       .from("strokes")
       .select("*")
       .eq("board_id", boardId)
       .order("created_at", { ascending: true });
 
-    if (data) {
-      socket.emit("load-strokes", data);
-    }
+    if (data) socket.emit("load-strokes", data);
   });
 
-  // 2️⃣ Handle live drawing event
+  // Handle live drawing event
   socket.on("draw", async (data) => {
-    const { boardId, x0, y0, x1, y1 } = data;
+    const { boardId, x0, y0, x1, y1, color, width } = data;
 
     // Save stroke to DB
     await supabase.from("strokes").insert({
@@ -50,12 +48,23 @@ io.on("connection", (socket) => {
       y0,
       x1,
       y1,
-      color: data.color || "white",
-      width: data.width || 3,
+      color: color || "white",
+      width: width || 3,
     });
 
     // Broadcast to everyone else
     socket.to(boardId).emit("draw", data);
+  });
+
+  // Handle board clearing
+  socket.on("clear", async ({ boardId }) => {
+    console.log("🧹 Clearing board:", boardId);
+
+    // Delete from DB
+    await supabase.from("strokes").delete().eq("board_id", boardId);
+
+    // Broadcast to everyone in the board room
+    io.in(boardId).emit("clear");
   });
 });
 

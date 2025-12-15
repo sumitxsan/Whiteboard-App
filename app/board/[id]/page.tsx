@@ -59,21 +59,21 @@ export default function BoardPage() {
   // ============================
   // Delete all strokes
   // ============================
-  const clearBoard = async () => {
-    const canvas = canvasRef.current!;
-    const ctx = canvas.getContext("2d")!;
+const clearBoard = async () => {
+  const canvas = canvasRef.current!;
+  const ctx = canvas.getContext("2d")!;
 
-    // Clear canvas locally
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+  // Clear canvas locally
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // Delete from DB
-    await supabase.from("strokes").delete().eq("board_id", boardId);
+  // Delete from DB
+  await supabase.from("strokes").delete().eq("board_id", boardId);
 
-    console.log("Board cleared in DB");
+  console.log("Board cleared in DB");
 
-    // Notify all socket peers
-    socket.emit("clear", { boardId });
-  };
+  // Notify all socket peers
+  socket.emit("clear", { boardId }); // send as object
+};
 
   // ============================
   // Main effect
@@ -173,6 +173,7 @@ export default function BoardPage() {
       socket.off("clear", handleRemoteClear);
     };
   }, [boardId]);
+  
 
   return (
     <div className="min-h-screen w-full flex flex-col items-center gap-4 bg-neutral-900 p-4">
@@ -187,7 +188,7 @@ export default function BoardPage() {
         ref={canvasRef}
         width={1000}
         height={600}
-        className="border border-white rounded-md"
+        className="border border-white rounded-md hover:cursor-crosshair"
       />
     </div>
   );
